@@ -5,12 +5,13 @@ module Split
     def tracking_code(options={})
       # needs more options: http://code.google.com/apis/analytics/docs/gaJS/gaJSApi.html
       account = options.delete(:account)
+      custom_variable_start_index = options.delete(:start_index)
 
       code = <<-EOF
         <script type="text/javascript">
           var _gaq = _gaq || [];
           _gaq.push(['_setAccount', '#{account}']);
-          #{custom_variables}
+          #{custom_variables(custom_variable_start_index)}
           _gaq.push(['_trackPageview']);
           _gaq.push(['_trackPageLoadTime']);
 
@@ -25,11 +26,11 @@ module Split
       code
     end
 
-    def custom_variables
+    def custom_variables(start_index = nil)
       return nil if session[:split].nil?
       arr = []
       session[:split].each_with_index do |h,i|
-        arr << "_gaq.push(['_setCustomVar', #{i+1}, '#{h[0]}', '#{h[1]}', 1]);"
+        arr << "_gaq.push(['_setCustomVar', #{i+(start_index || 1)}, '#{h[0]}', '#{h[1]}', 1]);"
       end
       arr.reverse[0..4].reverse.join("\n")
     end
